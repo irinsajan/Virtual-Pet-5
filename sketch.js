@@ -6,9 +6,10 @@ var foodS;
 var foodObj;
 var feedTime;
 var feedButton, addFoodButton;
-var gameState = Playing || Sleeping || Hungry || Bathing;
+var gameState = null;
 var bedroomImg, gardenImg, washroomImg;
-var update;
+
+var currentTime;
 
 function preload() {
 	//load images here
@@ -42,7 +43,7 @@ function setup() {
   addFoodButton = createButton("Add Food");
   addFoodButton.position(230, 70);
 
-  readGameState = database.ref('gameState');
+  var readGameState = database.ref('gameState');
   readGameState.on("value", function (data){
     gameState = data.val();
   });
@@ -66,14 +67,15 @@ function draw() {
       text("Last Fed: " + feedTime + "AM", 20, 35);
     }
   }
+  currentTime = hour();
 
-  if(feedTime == (feedTime + 1)) {
+  if(currentTime == (feedTime + 1)) {
     update("Playing");
     foodObj.garden();
-   } else if(feedTime == (feedTime + 2)) {
+   } else if(currentTime == (feedTime + 2)) {
     update("Sleeping");
     foodObj.bedroom();
-   } else if(feedTime>(feedTime + 2) && feedTime <= (feedTime+4)) {
+   } else if(currentTime>(feedTime + 2) && currentTime <= (feedTime+4)) {
     update("Bathing");
     foodObj.washroom();
    } else {
@@ -100,4 +102,10 @@ function draw() {
     foodS = foodS+1
     foodObj.updateStock(foodS);
   });
+}
+
+function update(state){
+	database.ref('/').update({
+		'gameState' : state
+	)};
 }
